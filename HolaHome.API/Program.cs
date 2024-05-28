@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Asp.Versioning;
 using System.Text;
 
 namespace HolaHome.API
@@ -42,6 +43,21 @@ namespace HolaHome.API
                 .AllowAnyMethod()
                 );
             });
+
+            builder.Services.AddApiVersioning(options =>
+            {
+                options.ReportApiVersions = true;
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            }).AddMvc().AddApiExplorer(options =>
+            {
+                // the default is ToString(), but we want "'v'major[.minor][-status]"
+                options.GroupNameFormat = "'v'VVV";
+                options.FormatGroupName = (group, version) => $"{group} - {version}";
+            });
+
+
 
             builder.Services.AddAuthentication(options =>
             {
