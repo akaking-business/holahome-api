@@ -87,19 +87,29 @@ namespace HolaHome.API
                 });
                 app.UseDeveloperExceptionPage();
             }
-            if (app.Environment.IsProduction())
+            else if (app.Environment.IsProduction())
             {
-                app.UseExceptionHandler("Home/Error"); //Chuyển hướng tới Action Error trong Controller Home
+                app.UseExceptionHandler("/Home/Error"); //Chuyển hướng tới Action Error trong Controller Home
                 app.UseHsts(); //Chỉ dùng HTTPS
                 app.UseCors();
             }
 
             app.UseHttpsRedirection();
+            app.UseRouting(); // Phải gọi UseRouting trước khi UseEndpoints
 
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "api/v{version:apiVersion}/{controller=Home}/{action=Index}/{id?}"
+                );
+            });
+
             app.MapControllers();
+
 
             app.Run();
         }
