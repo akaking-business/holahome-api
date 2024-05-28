@@ -1,4 +1,4 @@
-using HolaHome.API.Data;
+﻿using HolaHome.API.Data;
 using HolaHome.API.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -33,6 +33,14 @@ namespace HolaHome.API
                 options.Lockout.AllowedForNewUsers = true;
 
                 options.User.RequireUniqueEmail = true;
+            });
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllOrigins", builder => builder.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                );
             });
 
             builder.Services.AddAuthentication(options =>
@@ -72,17 +80,24 @@ namespace HolaHome.API
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(conf =>
+                {
+                    conf.SwaggerEndpoint("/swagger/v1/swagger.json", "HolaHome API version 1");
+                    conf.RoutePrefix = string.Empty;
+                });
+                app.UseDeveloperExceptionPage();
             }
             if (app.Environment.IsProduction())
             {
-
+                app.UseExceptionHandler("Home/Error"); //Chuyển hướng tới Action Error trong Controller Home
+                app.UseHsts(); //Chỉ dùng HTTPS
+                app.UseCors();
             }
 
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
-            app.UseAuthorization();         
+            app.UseAuthorization();
 
             app.MapControllers();
 
