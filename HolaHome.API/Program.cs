@@ -19,6 +19,22 @@ namespace HolaHome.API
             .AddEntityFrameworkStores<HolaHomeDbContext>()
             .AddDefaultTokenProviders();
 
+            builder.Services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequiredLength = 12;
+                options.Password.RequiredUniqueChars = 6;
+
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(25);
+                options.Lockout.MaxFailedAccessAttempts = 3;
+                options.Lockout.AllowedForNewUsers = true;
+
+                options.User.RequireUniqueEmail = true;
+            });
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -36,6 +52,12 @@ namespace HolaHome.API
                     ValidAudience = builder.Configuration["Jwt:Issuer"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
                 };
+            });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
             });
             // Add services to the container.
 
@@ -59,8 +81,8 @@ namespace HolaHome.API
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
-
+            app.UseAuthentication();
+            app.UseAuthorization();         
 
             app.MapControllers();
 
